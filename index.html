@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitMotiv - Питч-дек</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1f1a 50%, #2d3a2d 100%);
+            color: #ffffff; overflow: hidden;
+        }
+        .presentation-container {
+            position: relative; width: 100vw; height: 100vh;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .slide {
+            display: none; padding: 60px; max-width: 1200px; width: 90%; height: 85vh;
+            background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px);
+            border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4); overflow-y: auto;
+            animation: slideIn 0.8s cubic-bezier(0.23, 1, 0.320, 1);
+        }
+        .slide.active { display: block; }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(50px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .slide-header { text-align: center; margin-bottom: 50px; position: relative; }
+        .slide-number {
+            position: absolute; top: -20px; right: 0;
+            background: linear-gradient(135deg, #4a7c59 0%, #2f5233 100%);
+            color: white; padding: 8px 16px; border-radius: 20px;
+            font-size: 14px; font-weight: 600;
+        }
+        h1 {
+            font-size: 3.5rem; font-weight: 800;
+            background: linear-gradient(135deg, #4a7c59 0%, #6b8e6b 50%, #8fbc8f 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text; margin-bottom: 20px; text-align: center;
+        }
+        h2 {
+            font-size: 2.2rem; font-weight: 700;
+            background: linear-gradient(135deg, #4a7c59 0%, #6b8e6b 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text; margin-bottom: 30px;
+        }
+        .tagline { font-size: 1.3rem; color: #a0a0a0; margin-bottom: 30px; font-weight: 400; }
+        .content-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px; margin-bottom: 40px;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1); transition: all 0.3s ease;
+            position: relative; overflow: hidden;
+        }
+        .card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg, #4a7c59, #6b8e6b, #8fbc8f);
+            opacity: 0; transition: opacity 0.3s ease;
+        }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.3); background: rgba(255,255,255,0.12); }
+        .card:hover::before { opacity: 1; }
+        .card h3 { color: #ffffff; font-size: 1.4rem; margin-bottom: 15px; font-weight: 600; }
+        .card p, .card li { color: #b0b0b0; line-height: 1.6; font-size: 1rem; }
+        .card ul { list-style: none; padding: 0; }
+        .card li { position: relative; padding-left: 20px; margin-bottom: 8px; }
+        .card li::before { content: '→'; position: absolute; left: 0; color: #4a7c59; font-weight: bold; }
+        .highlight { background: linear-gradient(135deg, #4a7c59, #6b8e6b); padding: 2px 8px; border-radius: 4px; color: white; }
+        .navigation {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 15px; z-index: 1000;
+        }
+        .nav-btn {
+            background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+            color: white; padding: 12px 24px; border-radius: 50px; cursor: pointer;
+            transition: all 0.3s ease; backdrop-filter: blur(10px); font-weight: 500;
+        }
+        .nav-btn:hover { background: rgba(255,255,255,0.2); transform: translateY(-2px); }
+        .nav-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .slide-indicators {
+            position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 8px; z-index: 1000;
+        }
+        .indicator { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.3); cursor: pointer; transition: all 0.3s ease; }
+        .indicator.active { background: linear-gradient(135deg, #4a7c59, #6b8e6b); width: 20px; border-radius: 10px; }
+        .stats-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px; margin: 30px 0;
+        }
+        .stat-card {
+            text-align: center; padding: 25px; background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);
+        }
+        .stat-number {
+            font-size: 2.5rem; font-weight: 800;
+            background: linear-gradient(135deg, #4a7c59, #8fbc8f);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .stat-label { color: #a0a0a0; font-size: 0.9rem; margin-top: 5px; }
+
+        /* Команда без аватаров */
+        .team-member {
+            display: block;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .team-member h3 { margin-bottom: 6px; }
+        .team-member p { color: #c8c8c8; }
+
+        .floating-elements { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: -1; }
+        .floating-circle { position: absolute; border-radius: 50%; opacity: 0.1; animation: float 6s ease-in-out infinite; }
+        .floating-circle:nth-child(1) { width: 100px; height: 100px; background: linear-gradient(135deg, #4a7c59, #6b8e6b); top: 20%; left: 10%; animation-delay: 0s; }
+        .floating-circle:nth-child(2) { width: 150px; height: 150px; background: linear-gradient(135deg, #6b8e6b, #8fbc8f); top: 60%; right: 15%; animation-delay: 2s; }
+        .floating-circle:nth-child(3) { width: 80px; height: 80px; background: linear-gradient(135deg, #8fbc8f, #4a7c59); bottom: 30%; left: 20%; animation-delay: 4s; }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-20px) rotate(120deg); }
+            66% { transform: translateY(10px) rotate(240deg); }
+        }
+
+        @media (max-width: 768px) {
+            .slide { padding: 30px 20px; height: 90vh; }
+            h1 { font-size: 2.5rem; }
+            h2 { font-size: 1.8rem; }
+            .content-grid { grid-template-columns: 1fr; gap: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-elements">
+        <div class="floating-circle"></div>
+        <div class="floating-circle"></div>
+        <div class="floating-circle"></div>
+    </div>
+
+    <div class="presentation-container">
+        <!-- Slide 1: Title -->
+        <div class="slide active">
+            <div class="slide-header">
+                <div class="slide-number">1 / 9</div>
+                <h1>FitMotiv</h1>
+                <p class="tagline">Твоя персональная команда в кармане</p>
+            </div>
+            <div class="card" style="text-align: center; max-width: 600px; margin: 0 auto;">
+                <h3>Мы помогаем не бросать занятия спортом</h3>
+                <p style="font-size: 1.2rem; margin-top: 20px;">
+                    Создаём адаптивные планы тренировок для занятых профессионалов, которые ценят время и результат
+                </p>
+            </div>
+        </div>
+
+        <!-- Slide 2: Problem -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number">2 / 9</div>
+                <h2>Проблема</h2>
+            </div>
+            <div class="content-grid">
+                <div class="card">
+                    <h3>Наша аудитория</h3>
+                    <ul>
+                        <li><span class="highlight">Инженеры</span> и предприниматели</li>
+                        <li><span class="highlight">Офисные сотрудники</span> 30-50 лет</li>
+                        <li>Перегруженные работой</li>
+                        <li>Ценят эффективность и результат</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>Барьеры</h3>
+                    <ul>
+                        <li>Переработки и нехватка времени</li>
+                        <li>Усталость после работы</li>
+                        <li>Командировки и нарушение режима</li>
+                        <li>Отсутствие мотивации</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="card">
+                <h3>Как решают сегодня</h3>
+                <p>Шаблонные программы, YouTube-тренировки, массовые приложения без персонализации. <span class="highlight">50% бросают заниматься в первые 3 месяца</span></p>
+            </div>
+        </div>
+
+        <!-- Slide 3: Solution -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number">3 / 9</div>
+                <h2>Решение</h2>
+            </div>
+            <div class="content-grid">
+                <div class="card">
+                    <h3>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; margin-right: 10px; vertical-align: text-top;">
+                            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                            <path d="M2 17l10 5 10-5"/>
+                            <path d="M2 12l10 5 10-5"/>
+                        </svg>
+                        ИИ-персонализация
+                    </h3>
+                    <p>Подбор оптимальной тренировки по времени, усталости и доступному инвентарю в реальном времени</p>
+                </div>
+                <div class="card">
+                    <h3>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; margin-right: 10px; vertical-align: text-top;">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                        </svg>
+                        Короткие сессии
+                    </h3>
+                    <p>Тренировки 15/25/40+ минут. Всегда найдётся время для здоровья</p>
+                </div>
+                <div class="card">
+                    <h3>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; margin-right: 10px; vertical-align: text-top;">
+                            <path d="M9 11l3 3l8-8"/>
+                            <path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9"/>
+                        </svg>
+                        Микро-победы
+                    </h3>
+                    <p>Челленджи, недельные цели, трекинг прогресса для поддержания мотивации</p>
+                </div>
+                <div class="card">
+                    <h3>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; margin-right: 10px; vertical-align: text-top;">
+                            <path d="M3 3v18h18"/>
+                            <path d="M18 17l-5-5-5 5-3-3"/>
+                        </svg>
+                        Умная адаптация
+                    </h3>
+                    <p>Учёт настроения, сна и интеграция с трекерами активности</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Why Now -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number">4 / 9</div>
+                <h2>Почему сейчас</h2>
+            </div>
+            <div class="content-grid">
+                <div class="card">
+                    <h3>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; margin-right: 10px; vertical-align: text-top;">
+                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                            <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                            <line x1="12" y1="22.08" x2="12" y2="12"/>
+                        </svg>
+                        Гибридная работа
+                    </h3>
+                    <p>Фрагментация времени требует гибких решений для поддержания здоровья</p>
+                </div>
+                <div class="card">
+                    <h3>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; margin-right: 10px; vertical-align: text-top;">
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                        </svg>
+                        ИИ-стек созрел
+                    </h3>
+                    <p>Персонализация в реальном времени стала доступной и эффективной</p>
+                </div>
+                <div class="card">
+                    <h3>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; margin-right: 10px; vertical-align: text-top;">
+                            <circle cx="18" cy="5" r="3"/>
+                            <circle cx="6" cy="12" r="3"/>
+                            <circle cx="18" cy="19" r="3"/>
+                            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+                            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                        </svg>
+                        API-экосистема
+                    </h3>
+                    <p>HealthKit, Google Fit, Strava, Polar — интеграция с любимыми трекерами</p>
+                </div>
+                <div class="card">
+                    <h3>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; margin-right: 10px; vertical-align: text-top;">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <path d="m22 21-3-3"/>
+                            <circle cx="16" cy="16" r="5"/>
+                        </svg>
+                        Фитнес = статус
+                    </h3>
+                    <p>Мужчины 30-50 готовы платить за удобство и детальную аналитику</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: Market Size -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number">5 / 9</div>
+                <h2>Размер рынка</h2>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">$15B</div>
+                    <div class="stat-label">Глобальный рынок фитнес-приложений</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">32%</div>
+                    <div class="stat-label">Годовой рост рынка</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">2.6M</div>
+                    <div class="stat-label">Наша целевая аудитория в России</div>
+                </div>
+            </div>
+            <div class="card" style="margin-top: 30px;">
+                <h3>Работа в процессе</h3>
+                <p>Проводим исследование рынка и анализ конкурентов для уточнения SAM, SOM и TAM показателей</p>
+            </div>
+        </div>
+
+        <!-- Slide 6: Competition -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number">6 / 9</div>
+                <h2>Конкуренты</h2>
+            </div>
+            <div class="content-grid">
+                <div class="card">
+                    <h3>Текущие игроки</h3>
+                    <ul>
+                        <li><strong>Strava</strong> — социальный фитнес</li>
+                        <li><strong>Freeletics</strong> — ИИ, но долгие планы</li>
+                        <li><strong>Fitbod</strong> — только силовые в зале</li>
+                        <li><strong>Apple Fitness+</strong> — экосистема</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>Наши преимущества</h3>
+                    <ul>
+                        <li>Быстрая адаптация под момент</li>
+                        <li>Фокус на коротких сессиях</li>
+                        <li>Учёт эмоционального состояния</li>
+                        <li>PWA — простое распространение</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: Product -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number">7 / 9</div>
+                <h2>Продукт</h2>
+            </div>
+            <div class="content-grid">
+                <div class="card">
+                    <h3>Архитектура</h3>
+                    <ul>
+                        <li><strong>Frontend:</strong> React PWA, Tailwind</li>
+                        <li><strong>Backend:</strong> Supabase, ИИ-воркер</li>
+                        <li><strong>Интеграции:</strong> HealthKit, Strava</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>Ключевые фичи v0.1</h3>
+                    <ul>
+                        <li>Адаптивные планы 15-60+ минут</li>
+                        <li>Учёт инвентаря (дом/зал/отель)</li>
+                        <li>Статистика и челленджи</li>
+                        <li>Fake-door интеграций</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="card">
+                <h3>Дорожная карта (12 недель)</h3>
+                <ul>
+                    <li><strong>W1-2:</strong> Smoke-тесты, лендинг</li>
+                    <li><strong>W3-6:</strong> Учёт времени/настроения</li>
+                    <li><strong>W7-12:</strong> Интеграции и монетизация</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 8: Business Model -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number">8 / 9</div>
+                <h2>Бизнес-модель</h2>
+            </div>
+            <div class="card" style="text-align: center; margin-bottom: 30px;">
+                <h3>Работа в процессе</h3>
+                <p>Разрабатываем модель монетизации на основе исследования пользователей и анализа конкурентов</p>
+            </div>
+            <div class="content-grid">
+                <div class="card">
+                    <h3>Потенциальные модели</h3>
+                    <ul>
+                        <li>Freemium с премиум-функциями</li>
+                        <li>Месячная/годовая подписка</li>
+                        <li>Корпоративные пакеты</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>Метрики для валидации</h3>
+                    <ul>
+                        <li>LTV/CAC соотношение</li>
+                        <li>Retention rate по когортам</li>
+                        <li>Conversion в paid</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: Team -->
+        <div class="slide">
+            <div class="slide-header">
+                <div class="slide-number">9 / 9</div>
+                <h2>Команда</h2>
+            </div>
+
+            <div class="team-member">
+                <h3>Алекс Гутев — Product / Growth</h3>
+                <p>Опыт в EdTech и AI, аналитика, GTM, MVP</p>
+            </div>
+
+            <div class="team-member">
+                <h3>Михаил Заритовский — Lead Digital Analyst</h3>
+                <p>AI Automation Specialist. Проекты для Breitling, SWICA, Celestyal; автор курса (lantum.net), основатель revenuehunters.io</p>
+            </div>
+
+            <div class="team-member">
+                <h3>Разработчик и QA-инженер</h3>
+                <p>6+ лет опыта. Python, Telegram-боты, SaaS, AI-ассистенты</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="slide-indicators" id="indicators"></div>
+    <div class="navigation">
+        <button class="nav-btn" id="prevBtn" onclick="changeSlide(-1)">← Назад</button>
+        <button class="nav-btn" id="nextBtn" onclick="changeSlide(1)">Далее →</button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        const indicatorsContainer = document.getElementById('indicators');
+        for (let i = 0; i < totalSlides; i++) {
+            const indicator = document.createElement('div');
+            indicator.className = 'indicator';
+            if (i === 0) indicator.classList.add('active');
+            indicator.onclick = () => goToSlide(i);
+            indicatorsContainer.appendChild(indicator);
+        }
+        const indicators = document.querySelectorAll('.indicator');
+
+        function showSlide(n) {
+            slides.forEach((slide, index) => {
+                slide.classList.remove('active');
+                indicators[index].classList.remove('active');
+            });
+            slides[n].classList.add('active');
+            indicators[n].classList.add('active');
+            document.getElementById('prevBtn').disabled = (n === 0);
+            document.getElementById('nextBtn').disabled = (n === totalSlides - 1);
+        }
+        function changeSlide(direction) {
+            currentSlide += direction;
+            if (currentSlide < 0) currentSlide = 0;
+            if (currentSlide >= totalSlides) currentSlide = totalSlides - 1;
+            showSlide(currentSlide);
+        }
+        function goToSlide(n) {
+            currentSlide = n;
+            showSlide(currentSlide);
+        }
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') changeSlide(1);
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+        });
+        showSlide(0);
+    </script>
+</body>
+</html>
